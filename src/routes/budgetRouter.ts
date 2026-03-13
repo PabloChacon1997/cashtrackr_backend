@@ -1,34 +1,48 @@
 import { Router } from "express";
 import { BudgetController } from "../controllers/BudgetController";
-import { body, param } from "express-validator";
+
 import { handleInputErrors } from "../middleware/validation";
+import { validateBudgetExists, validateBudgetId, validateBudgetInput } from "../middleware/budget";
+import { ExpensesController } from "../controllers/ExpenseController";
+import { validateExpenseExists, validateExpenseId, validateExpensetInput } from "../middleware/expense";
 
 
 const router = Router()
 
+router.param('budgetId', validateBudgetId);
+router.param('budgetId', validateBudgetExists);
+
+router.param('expenseId', validateExpenseId);
+router.param('expenseId', validateExpenseExists);
 
 router.get('/', BudgetController.getAll);
 
 router.post('/',
-  body('name')
-    .notEmpty().withMessage('El nombre del presuepuesto no puede ir vacío'),
-  body('amount')
-    .notEmpty().withMessage('La cantidad de presupuesto no puede ir vacío')
-    .isNumeric().withMessage('La cantidad de presupuesto no es válida')
-    .custom(value => value > 0 ).withMessage('El presupuesto debe ser mayor a 0'),
+  validateBudgetInput,
   handleInputErrors,
   BudgetController.create);
 
-router.get('/:id',
-  param('id')
-    .isInt().withMessage('El id es inválido')
-    .custom(value => value > 0 ).withMessage('El id es inválido'),
+router.get('/:budgetId', BudgetController.getById);
+
+router.put('/:budgetId',
+  validateBudgetInput,
   handleInputErrors,
-  BudgetController.getById);
+  BudgetController.updateById);
 
-router.put('/:id', BudgetController.updateById);
+router.delete('/:budgetId', BudgetController.deleteById);
 
-router.delete('/:id', BudgetController.deleteById);
+// Routes for expenses
+
+router.post('/:budgetId/expenses',
+  validateExpensetInput,
+  handleInputErrors,
+  ExpensesController.create)
+router.get('/:budgetId/expenses/:expenseId', ExpensesController.getById)
+router.put('/:budgetId/expenses/:expenseId',
+  validateExpensetInput,
+  handleInputErrors,
+  ExpensesController.updateById)
+router.delete('/:budgetId/expenses/:expenseId', ExpensesController.deleteById)
 
 
 

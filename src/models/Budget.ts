@@ -1,4 +1,5 @@
-import { Column, DataType, Model, Table } from "sequelize-typescript";
+import { Column, DataType, HasMany, Model, Table } from "sequelize-typescript";
+import Expense from "./Expense";
 
 
 @Table({
@@ -14,6 +15,12 @@ class Budget extends Model {
     type: DataType.DECIMAL
   })
   declare amount: number
+
+  @HasMany(() => Expense, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
+  declare expenses: Expense[]
 }
 
 

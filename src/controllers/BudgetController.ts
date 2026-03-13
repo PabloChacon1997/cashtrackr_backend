@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express'
 import Budget from '../models/Budget'
+import Expense from '../models/Expense';
 
 
 export class BudgetController {
@@ -30,25 +31,19 @@ export class BudgetController {
   }
 
   static getById = async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const budget = await Budget.findByPk(+id)
-      if (!budget) {
-        const error = new Error('Presupuesto no encontrado');
-        return res.status(404).json({error: error.message});
-      }
-      return res.json(budget);
-    } catch (error) {
-      // console.log(error)
-      return res.status(500).json({error: 'Hubo un error'})
-    }
+    const budget = await Budget.findByPk(req.budget.id, {
+      include: [Expense]
+    })
+    res.json(budget);
   }
 
   static updateById = async (req: Request, res: Response) => {
-    res.send('Desde PUT api/budgets/:id')
+    await req.budget.update(req.body)
+    return res.json('Presupuesto actualizado correctamente');
   }
   static deleteById = async (req: Request, res: Response) => {
-    res.send('Desde DELETE api/budgets/:id')
+    await req.budget.destroy()
+    return res.json('Presupuesto eliminado correctamente');
   }
 }
 
