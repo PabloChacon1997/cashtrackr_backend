@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+
 import User from '../models/User';
 import { checkPassword, hashPassword } from '../utils/auth';
 import { generateToken } from '../utils/token';
@@ -108,5 +109,35 @@ export class AuthController {
     user.token = null;
     await user.save()
     res.json('Password modificado correctamente')
+  }
+
+  static user = async (req: Request, res: Response) => {
+    res.json(req.user);
+  }
+  
+  static updateCurrentUserPassword = async (req: Request, res: Response) => {
+    const { current_password , password } = req.body;
+    const { id } = req.user;
+    const user = await User.findByPk(id);
+    const isPasswordCorrect = await checkPassword(current_password, user.password);
+    if (!isPasswordCorrect) {
+      const error = new Error('El password actual es incorrecto')
+      return res.status(401).json({error: error.message})
+    }
+    user.password = await hashPassword(password)
+    await user.save()
+    res.json('El password se modifico correctamente');
+  }
+
+  static checkPassword = async (req: Request, res: Response) => {
+    const { password } = req.body;
+    const { id } = req.user;
+    const user = await User.findByPk(id);
+    const isPasswordCorrect = await checkPassword(password, user.password);
+    if (!isPasswordCorrect) {
+      const error = new Error('El password es incorrecto')
+      return res.status(401).json({error: error.message})
+    }
+    res.json('El password es correcto');
   }
 }
