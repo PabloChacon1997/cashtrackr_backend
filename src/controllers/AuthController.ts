@@ -140,4 +140,19 @@ export class AuthController {
     }
     res.json('El password es correcto');
   }
+
+  static updateUser = async (req: Request, res: Response) => {
+    const { name , email } = req.body;
+    const { id } = req.user;
+    const user = await User.findByPk(id);
+    const emailExists = await User.findOne({where: { email }})
+    if (emailExists && email !== req.user.email) {
+      const error = new Error('Ya existe un usuario con este email, ingrese otro')
+      return res.status(409).json({error: error.message})
+    }
+    user.name = name
+    user.email = email
+    await user.save()
+    res.json('El perfil se modifico correctamente');
+  }
 }

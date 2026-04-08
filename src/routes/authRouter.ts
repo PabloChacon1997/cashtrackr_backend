@@ -75,6 +75,15 @@ router.post('/update-password',
   handleInputErrors,
   AuthController.updateCurrentUserPassword)
 
+router.put('/user',
+  authenticate,
+  body('name')
+    .notEmpty().withMessage('El nombre no puede ir vació'),
+  body('email')
+    .isEmail().withMessage('El email no es válido'),
+  handleInputErrors,
+  AuthController.updateUser)
+
 router.post('/check-password',
   authenticate,
   body('password')
